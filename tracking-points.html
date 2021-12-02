@@ -1,0 +1,224 @@
+<html style="background-color: #202020">
+	<title>Greenscreen Generator</title>
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+	<div id="preview" style="width:100%;height:350px;position: relative">
+	</div>
+
+ <div class="w3-card-4">
+
+<div class="w3-container w3-green">
+  <h2>Tracking Point Generator</h2>
+</div>
+
+<div class="w3-container">
+
+
+
+<label>Primary Color</label>
+	<select id="option-primary-color" class="w3-select" name="option-color-white">
+		<option value="#00ff00" selected>Green</option>
+		<option value="#88ff88">Bright Green</option>
+		<option value="#0000ff">Blue</option>
+		<option value="#ff0000">Red</option>
+		<option value="#ff8800">Orange</option>
+		<option value="#000000">Black</option>
+		<option value="#eeeeee">Light Grey</option>
+		<option value="#202020">Dark Grey</option>
+		<option value="#ffffff">White</option>
+  </select> 
+  <label>Secondary Color</label>
+	<select id="option-secondary-color" class="w3-select" name="option-color-white">
+		<option value="#00ff00">Green</option>
+		<option value="#88ff88">Bright Green</option>
+		<option value="#0000ff">Blue</option>
+		<option value="#ff0000">Red</option>
+		<option value="#ff8800">Orange</option>
+		<option value="#000000" selected>Black</option>
+		<option value="#eeeeee">Light Grey</option>
+		<option value="#202020">Dark Grey</option>
+		<option value="#ffffff">White</option>
+  </select>
+
+  <label>Marker Type</label>
+	<select id="option-marker-type" class="w3-select" name="option-marker-type">
+		<option value="dots">Dots</option>
+		<option value="circles">Circles</option>
+		<option value="trackingdots"selected>Tracking Dots</option>
+  </select>
+	
+	<label>Marker Size</label>
+	<select id="option-marker-size" class="w3-select" name="option-marker-size">
+		<option value="3px">Tiny</option>
+		<option value="7px">Very Small</option>
+		<option value="15px">Small</option>
+		<option value="25px" selected>Normal</option>
+		<option value="50px">Big</option>
+		<option value="100px">Very Big</option>
+		<option value="250px">Enormous</option>
+  </select>
+
+	<label>Corner Marker</label>
+	<input  id="option-marker-corner" class="w3-check" type="checkbox" checked>
+
+	<label>Center Marker</label>
+	<input id="option-marker-center" class="w3-check" type="checkbox" checked>
+
+	<label>Center Corner</label>
+	<input id="option-marker-center-triangle" class="w3-check" type="checkbox" checked>
+
+	<label>Between Edges</label>
+	<input id="option-marker-edges" class="w3-check" type="checkbox">
+
+	<button id="button-fullscreen">Fullscreen</button>
+</div>
+
+</div> 
+
+<style>
+	#preview:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+}
+
+label, h2{
+	color:#ffffff;
+}
+
+
+</style>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+
+<script>
+
+	function update(){
+		var div = $("#preview");
+
+		var primaryColor = $("#option-primary-color").val();
+		var secondaryColor = $("#option-secondary-color").val();
+		var invertedPrimaryColor = invertColor(primaryColor);
+		var markerType = $("#option-marker-type").val();
+		var markerSize = $("#option-marker-size").val();
+		var markerSizeHalf = (markerSize.replace('px','') / 2) + "px";
+
+
+		var markerCenter = $("#option-marker-center").is(':checked');
+		var markerCorner = $("#option-marker-corner").is(':checked');
+		var markerCenterTriangle = $("#option-marker-center-triangle").is(':checked');
+		var markerEdges = $("#option-marker-edges").is(':checked');
+
+		console.log("Colors: " + primaryColor + "/" + secondaryColor + "; Markers: " + markerCenter + "," + markerCorner+"," + markerCenterTriangle+","+markerEdges+";Type:" +markerType + "/"+ markerSize);
+
+		
+		var markerStyle ="height:"+markerSize+";width:"+markerSize+";background-color:" + secondaryColor;
+		if (markerType=="dots"){
+			//nothing to do
+		}else if (markerType=="circles"){
+			markerStyle+=";border-radius:50%";
+		}else if (markerType=="trackingdots"){
+			markerStyle+=";border-radius:"+markerSizeHalf+";border-width:"+markerSizeHalf+";border-style:solid;"+
+				";border-right-color:" + secondaryColor +
+				";border-left-color:" + secondaryColor + 
+				";border-top-color:" + invertedPrimaryColor + 
+				";border-bottom-color:" + invertedPrimaryColor;
+		}
+
+		div.empty();
+		div.css("background-color",primaryColor);
+
+		if (markerCenter){
+			var divCenter = $("<div style="+markerStyle+"></div>").appendTo(div);
+			styleInPosition(divCenter,"50%","50%");
+		}
+		if (markerCorner){
+			for(var x=0;x<2;x++){
+				for(var y=0;y<2;y++){
+					var divCorner = $("<div style="+markerStyle+"></div>").appendTo(div);
+					styleInPosition(divCorner,5+x*90+"%",5+y*90 + "%");
+				}
+			}
+		}
+		if (markerCenterTriangle){
+			for(var x=0;x<2;x++){
+				for(var y=0;y<2;y++){
+					var divCorner = $("<div style="+markerStyle+"></div>").appendTo(div);
+					styleInPosition(divCorner,
+						(20+60*x)+"%",
+						(20+60*y)+"%"
+					);
+				}
+			}
+		}
+		if (markerEdges){
+			for(var x=0;x<5;x++){
+				for(var y=0;y<5;y++){
+					if (x==0 || x==4 || y==0 || y==4)
+					styleInPosition($("<div style="+markerStyle+"></div>").appendTo(div),
+						(5+90/4*x)+"%",
+						(5+90/4*y)+"%"
+					);
+				}
+			}
+		}
+	}
+
+	function styleInPosition(element,x,y){
+		element.css("position","absolute")
+			.css("top",y )
+			.css("left",x )
+			.css("transform","translate(-50%,-50%)")
+	}
+
+	$(document).ready(function(){
+		update();
+		$("#option-primary-color").change(update);
+		$("#option-secondary-color").change(update);
+		$("#option-marker-type").change(update);
+		$("#option-marker-size").change(update);
+
+		$("#option-marker-center").change(update);
+		$("#option-marker-corner").change(update);
+		$("#option-marker-center-triangle").change(update);
+		$("#option-marker-edges").change(update);
+
+
+		$( "#button-fullscreen" ).click(function() {
+			var elem = document.getElementById("preview");
+			console.log(elem);
+			elem.requestFullscreen();
+
+		});
+	});
+
+	function invertColor(hex) {
+    if (hex.indexOf('#') === 0) {
+        hex = hex.slice(1);
+    }
+    // convert 3-digit hex to 6-digits.
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    if (hex.length !== 6) {
+        throw new Error('Invalid HEX color.' + hex);
+    }
+    // invert color components
+    var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+        g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+        b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+    // pad each with zeros and return
+    return '#' + padZero(r) + padZero(g) + padZero(b);
+}
+
+function padZero(str, len) {
+    len = len || 2;
+    var zeros = new Array(len).join('0');
+    return (zeros + str).slice(-len);
+}
+
+
+
+</script>
+
+</html>
